@@ -1,3 +1,9 @@
+<p align="center">
+<a href="https://imgbb.com/"><img src="https://i.ibb.co/dkBB1nM/TG-Logo.png" alt="TG-Logo" border="0" width=250 height=250/></a>
+</p>
+
+
+------------------------
 ## T^ (T-Glyph)
 T^ _(read as: t-glyph)_ is an esoteric interpreted programming language that is based around 'glyphs' that execute some code based on the arguments given and based on the values of the "registers" (registers are pre-defined variables that can be used for calculations, string-manipulation, conditions etc.). 75% of things this language is made of were borrowed from other languages I have programmed in. It's a lightweight project - it's not supposed to actually be used in any sphere, it's not optimized or even close (More to say, the interpreter is made in Python). The point of the language is to just be a fun, messy thing that you can play around with. __It's a language that is made solely for the idea, not for real usage.__ Any tweaks are fully accepted and welcomed, you can open an issue or whatever ❤️
 
