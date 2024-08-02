@@ -46,4 +46,36 @@ T^ _(читай как: ти-глиф)_ это эзотерический, ин�
 ## T^ (T-Glyph)
 T^ _(read as: tea-glyph)_ is an esoteric interpreted programming language that is based around 'glyphs' that execute some code based on the arguments given and based on the values of the "registers" (registers are pre-defined variables that can be used for calculations, string-manipulation, conditions etc.). 75% of things this language is made of were borrowed from other languages I have programmed in. It's a lightweight project - it's not supposed to actually be used in any sphere, it's not optimized or even close (More to say, the interpreter is made in Python). The point of the language is to just be a fun, messy thing that you can play around with. __It's a language that is made solely for the idea, not for real usage.__ Any tweaks are fully accepted and welcomed, you can open an issue or whatever ❤️
 
-### Descriptions of all glyphs & registers are missing, as they haven't been translated.
+### Explaination of each glyph:
+| Glyph | Name | Number of required arguments | Purpose |
+| -------- | ------- | ------- | ------- |
+| ^ | Bind Glyph | 2 | Sets the value of a register (specified as text, e.g., "TA") (first argument) to a given value (second argument). The value must match the register's data type. |
+| & | Register Match Glyph | 2 | Sets the value of one register (first argument) to the value of another (second argument). Both arguments must be specified as text, e.g., "TA" |
+| $ | Output Glyph | 0 | Outputs the combined values of registers TA and TB. |
+| # | Bookmark Glyph | 1 | Creates a "bookmark" that can be jumped to later using the Jump glyph (`!`), may be used for making loops. Argument is a name of new bookmark (specified as text, e.g., "bk1"). |
+| ! | Jump Glyph | 1 | Jumps to a previously created bookmark. Argument is a name of bookmark (specified as text, e.g., "bk1") |
+| ; | Ignore Glyph | 0 | Enables "Ignore Mode". Makes all following glyphs ignored until another Ignore glyph is encountered. May be used to break from loops. |
+| = | Direct Comparsion Glyph | 2 | Compares two registers for both data type and value. Sets FA to 1 if equal, 0 otherwise. Both arguments must be specified as text, e.g., "TA" |
+| ( | Type Comparsion Glyph | 2 | Compares two registers for data type. Sets FA to 1 if equal, 0 otherwise. Both arguments must be specified as text, e.g., "TA" |
+| ) | Value Comparsion Glyph | 2 | Compares two registers for both data type and value. Sets FA to 1 if equal, 0 otherwise. Both arguments must be specified as text, e.g., "TA". Can compare number and text registers |
+| @ | When Glyph | 1 | Executes the following glyph only if FA is 1, skips the glyph otherwise. May be used for loops |
+| + | Add Glyph | 1 | Adds a number to the value of register MA. Argument is any number. |
+| - | Substract Glyph | 1 | Subtracts a number from the value of register MA. Argument is any number. |
+| / | Divide Glyph | 1 | Divides the value of register MA by a number. Argument is any number. |
+| * | Multiply Glyph | 1 | Multiplies the value of register MA by a number. Argument is any number. |
+| ` | Register Reset Glyph | 1 | Resets the value of a specified register to its initial value. Argument must be name of regiser specified as text, e.g., "TA" |
+| ~ | NTS-conversion Glyph | 0 | Converts the number in MA to a text string and stores it in TA. |
+| : | STN-conversion Glyph | 0 | Converts the text in TA to a number and stores it in MA. |
+| > | Push Glyph | 1 | Pushes the value of a register onto the stack. Argument must be name of regiser specified as text, e.g., "TA" |
+| < | Pop Glyph | 0 | Pops the top value from the stack and assigns it to a register it was pushed by. |
+
+### Register Explanations
+| Register Name | Data Type | Initial Value | Purpose |
+| -------- | ------- | ------- | ------- |
+| MA | Number | 0| Used for mathematical operations. Affected by `+ - / * ~ :` glyphs. |
+| MB | Number |0| Used for mathematical operations. |
+| TA | Text | "" (Empty string) | Used for text manipulations. Affected by `$ ~ :` glyphs|
+| TB | Text | "\n" (Newline symbol) | Used for text manipulations. |
+| FA | Constant (Actually: Number) | 0 | Used for condiations. Affected by `= ( )` glyphs. |
+| AA, AB ... AY, AZ | Any | 0 | General-purpose registers. |
+------------------------------------------------
