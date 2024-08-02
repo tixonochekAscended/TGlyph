@@ -70,6 +70,7 @@ def runCode(appArgs: list[str]):
     global script
     script = open(appArgs[0], "r", encoding="UTF-8")
     allGlyphs = script.read()
+    allGlyphs = "\n".join(t.split("//")[0].strip() for t in allGlyphs.split("\n"))
     dividedGlyphs: list[tuple] = []
     j = 0
     scIndex = 0
