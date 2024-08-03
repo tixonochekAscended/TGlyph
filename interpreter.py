@@ -78,11 +78,11 @@ def runCode(args: list[str]):
     if glyph in "\"'" and not in_number and not in_string:
       str_start = j
       in_string = True
-    elif glyph == "," and not in_number and not in_string:
+    elif glyph == "," and not in_string and not in_number:
       str_start = j
       in_number = True
 
-    elif in_string:
+    elif in_number:
       if glyph == ",":
         in_number = False
         try:
