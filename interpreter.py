@@ -72,30 +72,29 @@ def runCode(args: list[str]):
   with open(args[0], encoding="UTF-8") as f:
     allGlyphs = f.read()
   dividedGlyphs: list[tuple[str, Any]] = []
-  scIndex = 0
-  glyphLookS = False
-  glyphLookI = False
+  str_start = 0
+  in_string = in_number = False
   for j, glyph in enumerate(allGlyphs):
-    if glyph in "\"'" and not glyphLookI and not glyphLookS:
-      scIndex = j
-      glyphLookS = True
-    elif glyph == "," and not glyphLookS and not glyphLookI:
-      scIndex = j
-      glyphLookI = True
+    if glyph in "\"'" and not in_number and not in_string:
+      str_start = j
+      in_string = True
+    elif glyph == "," and not in_number and not in_string:
+      str_start = j
+      in_number = True
 
-    elif glyphLookI:
+    elif in_string:
       if glyph == ",":
-        glyphLookI = False
+        in_number = False
         try:
-          dividedGlyphs.append(("number", float(allGlyphs[scIndex + 1:j])))
+          dividedGlyphs.append(("number", float(allGlyphs[str_start + 1:j])))
         except:
           tglError(17)
-        scIndex = 0
-    elif glyphLookS and glyph in "\"'":
-      glyphLookS = False
-      dividedGlyphs.append(("string", allGlyphs[scIndex + 1:j]))
-      scIndex = 0
-    elif not (glyphLookS or glyphLookI) and glyph not in "\n\r\t ":
+        str_start = 0
+    elif in_string and glyph in "\"'":
+      in_string = False
+      dividedGlyphs.append(("string", allGlyphs[str_start + 1:j]))
+      str_start = 0
+    elif not (in_string or in_number) and glyph not in "\n\r\t ":
       dividedGlyphs.append(("glyph", glyph))
 
   # ----------------------------------
