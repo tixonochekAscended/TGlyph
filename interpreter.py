@@ -71,7 +71,7 @@ def runCode(args: list[str]):
     tglError(1)
   with open(args[0], encoding="UTF-8") as f:
     allGlyphs = f.read()
-  dividedGlyphs: list[tuple[string, Any]] = []
+  dividedGlyphs: list[tuple[str, Any]] = []
   scIndex = 0
   glyphLookS = False
   glyphLookI = False
