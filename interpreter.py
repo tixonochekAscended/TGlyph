@@ -80,13 +80,13 @@ def parseGlyphs(glyphs: str) -> list[tuple[str, Any]]:
             pass
     tglError(49)
 
-  def parseString(s: str, string_delimiter: str, index: int) -> tuple[str, int]:
+  def parseString(s: str, index: int) -> tuple[str, int]:
     BACKSLASH = {
-      string_delimiter: string_delimiter, "\\": "\\", "/": "/",
+      "\"": "\"", "'": "'", "\\": "\\", "/": "/",
       "b": "\b", "f": "\f", "n": "\n", "r": "\r", "t": "\t"
     }
     new_text = ""
-    STRINGCHUNK = re.compile(f"(.*?)([{string_delimiter}\\\\\\x00-\\x1f])", re.VERBOSE | re.MULTILINE | re.DOTALL)
+    STRINGCHUNK = re.compile(f"(.*?)([\"'\\\\\\x00-\\x1f])", re.VERBOSE | re.MULTILINE | re.DOTALL)
     while True:
       chunk = STRINGCHUNK.match(s, index)
       if chunk is None:
@@ -95,7 +95,7 @@ def parseGlyphs(glyphs: str) -> list[tuple[str, Any]]:
       content, terminator = chunk.groups()
       if content:
         new_text += content
-      if terminator == string_delimiter:
+      if terminator in "\"'":
         break
       if terminator != "\\":
         tglError(49)
@@ -138,7 +138,7 @@ def parseGlyphs(glyphs: str) -> list[tuple[str, Any]]:
   while j < len(glyphs):
     glyph = glyphs[j]
     if glyph in f"\"'":
-      token, j = parseString(glyphs, glyph, j + 1)
+      token, j = parseString(glyphs, j + 1)
       tokens.append(("string", token))
     elif glyph == ",":
       token, j = parseNumber(glyphs, j + 1)
