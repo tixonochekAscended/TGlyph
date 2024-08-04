@@ -10,7 +10,7 @@ ERRORS: dict[int, str] = {
   2: "You haven't provided any (application) arguments, therefore there is no file to run and process.\n"
      "Usage: py interpreter.py <tgl file> (-B/-bypass)",
   3: "Unknown glyph contained in the code.",
-  4: "Not enough values provided for the bind glyph (^). Perhaps an unterminated string.",
+  4: "Not enough values provided for the bind glyph (^).",
   5: "The first value provided to the bind glyph (^) must be a string symbolising the name of a certain register.",
   6: "You provided a wrong type of value to the register via the bind glyph (^).",
   7: "Register you provided via the bind glyph (^) does not exist.",
