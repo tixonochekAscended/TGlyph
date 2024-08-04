@@ -1,0 +1,18 @@
+[*
+
+Prints first 10 numbers
+multiline comment test
+int qwertyuiop[]
+
+*]
+
+# "loop begin"
+@ [* run until "MA" =/= "AA" *]
+;
+^ "AA" ,10,
++ ,1,
+~
+$
+) "MA" "AA"
+! "loop begin"
+;
