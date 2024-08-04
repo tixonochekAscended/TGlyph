@@ -7,9 +7,10 @@ from typing import NoReturn, Any
 ERRORS: dict[int, str] = {
   0: "Unsupported file type. If you would like to bypass the file type, provide \"-B\" or \"-bypass\" in (application) arguments.",
   1: "File you provided as a script does not exist. Perhaps you made a typo?",
-  2: "You haven't provided any (application) arguments, therefore there is no file to run and process.",
+  2: "You haven't provided any (application) arguments, therefore there is no file to run and process.\n"
+     "Usage: py interpreter.py <tgl file> (-B/-bypass)",
   3: "Unknown glyph contained in the code.",
-  4: "Not enough values provided for the bind glyph (^).",
+  4: "Not enough values provided for the bind glyph (^). Perhaps an unterminated string.",
   5: "The first value provided to the bind glyph (^) must be a string symbolising the name of a certain register.",
   6: "You provided a wrong type of value to the register via the bind glyph (^).",
   7: "Register you provided via the bind glyph (^) does not exist.",
@@ -52,7 +53,11 @@ ERRORS: dict[int, str] = {
   45: "Not enough values provided for the push glyph (>).",
   46: "The value provided to the push glyph (>) must be a string, symbolising a name of the register that is being pushed to the stack.",
   47: "The register you tried to push onto the stack does not exist.",
-  48: "You can't push a constant, read-only flag onto the stack."
+  48: "You can't push a constant, read-only flag onto the stack.",
+  49: "Invalid escape sequence in a string",
+  50: "Unterminated string literal",
+  51: "Unterminated number literal",
+  52: "Unterminated comment"
 }
 
 
@@ -63,6 +68,96 @@ def tglError(_id: int) -> NoReturn:
   sys.exit(-1)
 
 
+def parseGlyphs(glyphs: str) -> list[tuple[str, Any]]:
+  COMMENT_RE = re.compile(f"(.*?)(\\*])", re.VERBOSE | re.MULTILINE | re.DOTALL)
+
+  def decode_uXXXX(s: str, pos: int) -> int:
+    esc = s[pos + 1:pos + 5]
+    if len(esc) == 4 and esc[1].lower() != "x":
+        try:
+            return int(esc, 16)
+        except ValueError:
+            pass
+    tglError(49)
+
+  def parseString(s: str, string_delimiter: str, index: int) -> tuple[str, int]:
+    BACKSLASH = {
+      string_delimiter: string_delimiter, "\\": "\\", "/": "/",
+      "b": "\b", "f": "\f", "n": "\n", "r": "\r", "t": "\t"
+    }
+    new_text = ""
+    STRINGCHUNK = re.compile(f"(.*?)([{string_delimiter}\\\\\\x00-\\x1f])", re.VERBOSE | re.MULTILINE | re.DOTALL)
+    while True:
+      chunk = STRINGCHUNK.match(s, index)
+      if chunk is None:
+        tglError(50)
+      index = chunk.end()
+      content, terminator = chunk.groups()
+      if content:
+        new_text += content
+      if terminator == string_delimiter:
+        break
+      if terminator != "\\":
+        tglError(49)
+      if index > len(s):
+        tglError(49)
+      esc = s[index]
+
+      if esc != "u":
+        if esc not in BACKSLASH:
+          tglError(49)
+        new_text += BACKSLASH[esc]
+        index += 1
+      else:
+        uni = decode_uXXXX(s, index)
+        index += 5
+        if 0xd800 <= uni <= 0xdbff and s[index:index + 2] == '\\u':
+          uni2 = _decode_uXXXX(s, index + 1)
+          if 0xdc00 <= uni2 <= 0xdfff:
+            uni = 0x10000 + (((uni - 0xd800) << 10) | (uni2 - 0xdc00))
+            index += 6
+        new_text += chr(uni)
+    return new_text, index
+
+  def parseNumber(s: str, index: int) -> tuple[float, int]:
+    NUMBER_RE = re.compile(
+      r'(-?(?:0|[1-9]\d*))(\.\d+)?([eE][-+]?\d+)?',
+      (re.VERBOSE | re.MULTILINE | re.DOTALL)
+    )
+    m = NUMBER_RE.match(s, index)
+    if m is None:
+      tglError(17)
+    index = m.end()
+    if s[index:index+1] != ",":
+      tglError(51)
+    integer, frac, exp = m.groups()
+    return float(integer + (frac or '') + (exp or '')), index + 1
+
+  tokens = []
+  j = 0
+  while j < len(glyphs):
+    glyph = glyphs[j]
+    if glyph in f"\"'":
+      token, j = parseString(glyphs, glyph, j + 1)
+      tokens.append(("string", token))
+    elif glyph == ",":
+      token, j = parseNumber(glyphs, j + 1)
+      tokens.append(("number", token))
+    elif glyph == "[" and glyphs[j:j+2] == "[*":
+      m = COMMENT_RE.match(glyphs, j)
+      if m is None:
+        tglError(52)
+      j = m.end()
+    elif glyph == "*" and glyphs[j:j+2] == "*]":
+      tglError(52)
+    elif glyph not in "\n\r\t ":
+      tokens.append(("glyph", glyph))
+      j += 1
+    else:
+      j += 1
+  return tokens
+
+
 def runCode(args: list[str]):
   args.pop(0)
   if not args[0].endswith(".tgl") and "-B" not in args and "-bypass" not in args:
@@ -71,31 +166,7 @@ def runCode(args: list[str]):
     tglError(1)
   with open(args[0], encoding="UTF-8") as f:
     allGlyphs = f.read()
-  dividedGlyphs: list[tuple[str, Any]] = []
-  str_start = 0
-  in_string = in_number = False
-  for j, glyph in enumerate(allGlyphs):
-    if glyph in "\"'" and not in_number and not in_string:
-      str_start = j
-      in_string = True
-    elif glyph == "," and not in_string and not in_number:
-      str_start = j
-      in_number = True
-
-    elif in_number:
-      if glyph == ",":
-        in_number = False
-        try:
-          dividedGlyphs.append(("number", float(allGlyphs[str_start + 1:j])))
-        except:
-          tglError(17)
-        str_start = 0
-    elif in_string and glyph in "\"'":
-      in_string = False
-      dividedGlyphs.append(("string", allGlyphs[str_start + 1:j]))
-      str_start = 0
-    elif not (in_string or in_number) and glyph not in "\n\r\t ":
-      dividedGlyphs.append(("glyph", glyph))
+  dividedGlyphs: list[tuple[str, Any]] = parseGlyphs(allGlyphs)
 
   # ----------------------------------
   # Declaration of important variables
@@ -366,7 +437,7 @@ def runCode(args: list[str]):
             tglError(35)
           registers[nextActionValue] = copy.deepcopy(origRegisters[nextActionValue])
         case "~":
-          registers['TA'][1] = str(registers['MA'][1])
+          registers['TA'][1] = str(registers['MA'][1]).removesuffix(".0")
         case ":":
           try:
             registers['MA'][1] = float(registers['TA'][1])
