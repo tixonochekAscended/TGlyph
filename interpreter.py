@@ -99,7 +99,10 @@ class ErrorHandler:
         51: "Unterminated number literal.",
         52: "Unterminated comment.",
         53: "This application argument you provided does not exist: ~~~",
-        54: "Unknown error. If you see this, please contact the developer."
+        54: "Unknown error. If you see this, please contact the developer.",
+        55: "The values provided for < (less than) comparison glyph (|) must be strings, symbolising the names of the registers.",
+        56: "The register you tried to compare via the < (less than) comparison glyph (|) does not exist (at least one of the provided ones).",
+        57: "The registers you tried to compare via the < (less than) comparison glyph (|) must both be registers that are numerical (store numbers currently)."
     }
     
     @classmethod
@@ -227,7 +230,7 @@ class Register:
         self._name: str = name
         self._data_type: str = data_type
         if data_type == RegisterType.ANY:
-            self._real_type = None
+            self._real_type = RegisterType.NUMBER
         self._value: Any = default_value
         self._default_value: Any = default_value
     
@@ -286,11 +289,13 @@ class Parser:
        "=": 2,
        "(": 2,
        ")": 2,
+       "|": 2,
        "@": 1,
        "+": 0,
        "-": 0,
        "/": 0,
        "*": 0,
+       "%": 0,
        "`": 1,
        "~": 0,
        ":": 0,
@@ -388,6 +393,15 @@ class Parser:
                         second_to_compare: Register = self.get_register(arguments[1].value, 41)
                         flag_register: Register = self.get_register("FA")
                         flag_register.set(int(first_to_compare.value == second_to_compare.value), bypass=True)
+                    case '|':
+                        if any(arg.type != TokenType.STRING for arg in [arguments[0], arguments[1]]):
+                            ErrorHandler.throw_error(55)
+                        first_to_compare: Register = self.get_register(arguments[0].value, 56)
+                        second_to_compare: Register = self.get_register(arguments[1].value, 56)
+                        if not (first_to_compare.type == RegisterType.NUMBER) or not (second_to_compare.type == RegisterType.NUMBER):
+                            ErrorHandler.throw_error(57)
+                        flag_register: Register = self.get_register("FA")
+                        flag_register.set(int(first_to_compare.value < second_to_compare.value), bypass=True)
                     case '@':
                         if arguments[0].type != TokenType.GLYPH:
                             ErrorHandler.throw_error(16)
@@ -409,6 +423,10 @@ class Parser:
                     case '/':
                         self.get_register("MA").set(
                            self.get_register("MA").value / self.get_register("MB").value
+                        )
+                    case '%':
+                        self.get_register("MA").set(
+                           self.get_register("MA").value % self.get_register("MB").value
                         )
                     case '~':
                         self.get_register("TA").set(str(self.get_register("MA").value).removesuffix(".0"))
