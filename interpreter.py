@@ -5,7 +5,6 @@ P.S.: REMADE WITH CLASSES, AUTHOR: TIXONOCHEK, CONTRIBUTION: TEMA5002
 import sys, os, re
 from enum import Enum
 from typing import NoReturn, Optional, Any
-from itertools import product as itertools_product
 from string import ascii_uppercase
 from copy import deepcopy as copy_deepcopy
 
