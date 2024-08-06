@@ -30,13 +30,12 @@ Code below prints "AN" fibonacci numbers
     [* print AA *]
     & "MA" "AA"
     ~ $
-    [* AT = AA *]
-    & "AT" "AA"
+    [* MA = AA *]
+    & "MA" "AA"
     [* AA = AB *]
     & "AA" "AB"
-    [* AB = AT + AB *]
-    & "MA" "AB"
-    & "MB" "AT"
+    [* AB = MA + AB *]
+    & "MB" "AB"
     +
     & "AB" "MA"
     [* AI = AI + 1 *]
