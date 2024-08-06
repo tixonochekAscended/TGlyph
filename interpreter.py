@@ -119,7 +119,6 @@ class Token:
     def __init__(self, type: TokenType, value: Any) -> None:
         self.type: TokenType = type
         self.value: Any = value
-        self.full: tuple[str, Any] = (type, value)
 
     def __repr__(self) -> str:
         return f"Token({self.type}) = {self.value}"
