@@ -367,7 +367,6 @@ class Parser:
                         if to_register.type() != from_register.type():
                            ErrorHandler.throw_error(23)
                         to_register.set(from_register.value(), 23)
-                        print(to_register._name, to_register.value())
                     case '$':
                         print(self.get_register("TA").value(), end=self.get_register("TB").value())
                     case '#':
