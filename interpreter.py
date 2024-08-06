@@ -300,47 +300,42 @@ class Parser:
     }
     _regs: list[Register] = []
     stack: list[(str, Any)] = []
-    bookmarks: list[(str, int)] = []
+    bookmarks: dict[str, int] = {}
 
     def __init__(self):
-        # Create & append all of the TGlyph registers,
-        # to the _regs list of Parser class;
-        # create the stack & the bookmarks.
-        self._regs.append(Register(name="MA", data_type=RegisterType.NUMBER, default_value=0.0))
-        self._regs.append(Register(name="MB", data_type=RegisterType.NUMBER, default_value=0.0))
-        self._regs.append(Register(name="TA", data_type=RegisterType.STRING, default_value=''))
-        self._regs.append(Register(name="TB", data_type=RegisterType.STRING, default_value='\n'))
-        self._regs.append(Register(name="FA", data_type=RegisterType.CONST, default_value=0.0))
-        # The code below creates 26 universal registers (AA, AB .. AZ)
-        for reg_name in [''.join(pair) for pair in itertools_product(ascii_uppercase, repeat=2) if pair[0] == 'A']:
-            self._regs.append(Register(reg_name, RegisterType.ANY, 0.0))
-        self._orig_regs = copy_deepcopy(self._regs)
+        """
+        Create & append all of the TGlyph registers,
+        to the _regs list of Parser class
+        """
+        # This code creates 26 universal registers
+        self._regs = [Register("A" + letter, RegisterType.ANY, 0.0) for letter in ascii_uppercase]
+        self._regs.append(Register("MA", RegisterType.NUMBER, 0.0))
+        self._regs.append(Register("MB", RegisterType.NUMBER, 0.0))
+        self._regs.append(Register("TA", RegisterType.STRING, ''))
+        self._regs.append(Register("TB", RegisterType.STRING, '\n'))
+        self._regs.append(Register("FA", RegisterType.CONST, 0.0))
 
     def get_register(self, name: str, error_id: int = 54) -> Register:
-        # This method finds & returns a Register
-        # object by the Register's name.
+        """
+        Finds & returns Register by the Register's name.
+        """
         name = name.upper()
-        found_register: Register = None
         for register in self._regs:
             if name == register._name:
-                found_register = register
-                break
-        if found_register is None:
-           ErrorHandler.throw_error(error_id)
-        return found_register
-    
+                return register
+        ErrorHandler.throw_error(error_id)
+
     def parse(self, tokens: list[Token]) -> None:
         j: int = 0
         ignore_mode: bool = False
         while j < len(tokens):
-
             current: Token = tokens[j]
             if current.type == TokenType.GLYPH: # Get & append the arguments if they exist, if they dont throw an error that states this.
                 if ignore_mode:
                     ignore_mode = current.value != ";"
-                    j += 1 
-                    continue      
-                if not (current.value in self._NEEDED_ARGS.keys()):
+                    j += 1
+                    continue     
+                if current.value not in self._NEEDED_ARGS:
                     ErrorHandler.throw_error(3)
                 arguments: list[Token] = tokens[j+1:j+1+self._NEEDED_ARGS[current.value]] # Get arguments using slices to prevent IndexError
                 if len(arguments) < self._NEEDED_ARGS[current.value]:
@@ -348,103 +343,95 @@ class Parser:
                 # Execute each glyph (the actual interpretation of the code)
                 match current.value:
                     case '^':
-                        if not (arguments[0].type == TokenType.STRING):
+                        if arguments[0].type != TokenType.STRING:
                             ErrorHandler.throw_error(5)
                         desired_register: Register = self.get_register(arguments[0].value, 7)
                         desired_register.set(arguments[1].value, 6)
                     case "&":
-                        if not (arguments[0].type == TokenType.STRING) or not (arguments[1].type == TokenType.STRING):
+                        if any(arg.type != TokenType.STRING for arg in [arguments[0], arguments[1]]):
                             ErrorHandler.throw_error(21)
                         to_register: Register = self.get_register(arguments[0].value, 22)
                         from_register: Register = self.get_register(arguments[1].value, 22)
-                        if to_register.type != from_register.type:
-                            ErrorHandler.throw_error(23)
                         to_register.set(from_register.value, 23)
                     case '$':
                         print(self.get_register("TA").value, end=self.get_register("TB").value)
                     case '#':
-                        if not (arguments[0].type == "string"):
+                        if arguments[0].type != TokenType.STRING:
                             ErrorHandler.throw_error(8)
-                        self.bookmarks.append((arguments[0].value.upper(), j))
+                        self.bookmarks[arguments[0].value.upper()] = j
                     case '!':
-                        if not (arguments[0].type == "string"):
+                        if arguments[0].type != TokenType.STRING:
                             ErrorHandler.throw_error(10)
-                        found_bk_j: int = None
-                        for bookmark in self.bookmarks:
-                           if arguments[0].value.upper() == bookmark[0]:
-                              found_bk_j = bookmark[1]
-                              break
-                        if found_bk_j is None:
-                           ErrorHandler.throw_error(12)
-                        j = found_bk_j
-                        continue
+                        bookmark_name: str = arguments[0].value.upper()
+                        if bookmark_name not in self.bookmarks:
+                            ErrorHandler.throw_error(12)
+                        j = self.bookmarks[bookmark_name]
                     case ';':
                         ignore_mode = True
                     case '=':
-                        if not (arguments[0].type == TokenType.STRING) or not (arguments[1].type == TokenType.STRING):
+                        if any(arg.type != TokenType.STRING for arg in [arguments[0], arguments[1]]):
                             ErrorHandler.throw_error(18)
                         first_to_compare: Register = self.get_register(arguments[0].value, 19)
                         second_to_compare: Register = self.get_register(arguments[1].value, 19)
                         flag_register: Register = self.get_register("FA")
-                        flag_register.set(int((first_to_compare.type, first_to_compare.value) == (second_to_compare.type, second_to_compare.value)), bypass=True)
+                        flag_register.set(int(first_to_compare == second_to_compare), bypass=True)
                     case '(':
-                        if not (arguments[0].type == TokenType.STRING) or not (arguments[1].type == TokenType.STRING):
+                        if any(arg.type != TokenType.STRING for arg in [arguments[0], arguments[1]]):
                             ErrorHandler.throw_error(36)
                         first_to_compare: Register = self.get_register(arguments[0].value, 37)
                         second_to_compare: Register = self.get_register(arguments[1].value, 37)
                         flag_register: Register = self.get_register("FA")
                         flag_register.set(int(first_to_compare.type == second_to_compare.type), bypass=True)
                     case ')':
-                        if not (arguments[0].type == TokenType.STRING) or not (arguments[1].type == TokenType.STRING):
+                        if any(arg.type != TokenType.STRING for arg in [arguments[0], arguments[1]]):
                             ErrorHandler.throw_error(40)
                         first_to_compare: Register = self.get_register(arguments[0].value, 41)
                         second_to_compare: Register = self.get_register(arguments[1].value, 41)
                         flag_register: Register = self.get_register("FA")
                         flag_register.set(int(first_to_compare.value == second_to_compare.value), bypass=True)
                     case '@':
-                        if not (arguments[0].type == TokenType.GLYPH):
+                        if arguments[0].type != TokenType.GLYPH:
                             ErrorHandler.throw_error(16)
                         if not self.get_register("FA").value:
                            j += 2
                            continue
                     case '+':
-                        self.get_register("MA").set((
+                        self.get_register("MA").set(
                            self.get_register("MA").value + self.get_register("MB").value
-                        ))
+                        )
                     case '-':
-                        self.get_register("MA").set((
+                        self.get_register("MA").set(
                            self.get_register("MA").value - self.get_register("MB").value
-                        ))
+                        )
                     case '*':
-                        self.get_register("MA").set((
+                        self.get_register("MA").set(
                            self.get_register("MA").value * self.get_register("MB").value
-                        ))
+                        )
                     case '/':
-                        self.get_register("MA").set((
+                        self.get_register("MA").set(
                            self.get_register("MA").value / self.get_register("MB").value
-                        ))
+                        )
                     case '~':
-                      self.get_register("TA").set(str(self.get_register("MA").value))
+                        self.get_register("TA").set(str(self.get_register("MA").value).removesuffix(".0"))
                     case ':':
-                        try: self.get_register("MA").set(float(self.get_register("TA").value))
-                        except: ErrorHandler.throw_error(44)
+                        try:
+                            self.get_register("MA").set(float(self.get_register("TA").value))
+                        except ValueError:
+                            ErrorHandler.throw_error(44)
                     case '`':
-                        if not (arguments[0].type == TokenType.STRING):
+                        if arguments[0].type != TokenType.STRING:
                             ErrorHandler.throw_error(34)
-                        self.get_register(arguments[0].value, 35).set(copy_deepcopy(
-                           self._orig_get_register(arguments[0].value, 35).value
-                        ))
+                        self.get_register(arguments[0].value, 35).reset()
                     case '>':
-                        if not (arguments[0].type == TokenType.STRING):
+                        if arguments[0].type != TokenType.STRING:
                             ErrorHandler.throw_error(46)
                         register_to_push = self.get_register(arguments[0].value, 47)
                         if register_to_push.type == RegisterType.CONST:
-                           ErrorHandler.throw_error(48)
+                            ErrorHandler.throw_error(48)
                         self.stack.append((arguments[0].value, register_to_push.value))
                     case '<':
                         popped = self.stack.pop(0)
-                        related_register: Register = self.get_register(popped[0])
-                        related_register.set(popped[1])
+                        self.get_register(popped[0]).set(popped[1])
             j += 1
 
 def main() -> None:
