@@ -107,6 +107,9 @@ class ErrorHandler:
     
     @classmethod
     def throw_error(cls, error_id: int, *args: str) -> NoReturn:
+        if error_id == -1:
+            print(f"{Utils.Colors._BOLD}{Utils.Colors._GREEN}Keyboard Interrupt, exiting the program...{Utils.Colors._ENDC}")
+            sys.exit(-1)
         if ("~~~" in cls._ERRORS[error_id]) and (len(args) >= 1):
             cls._ERRORS[error_id] = cls._ERRORS[error_id].replace("~~~", args[0])
         print(f"\n{Utils.Colors._FAIL}[fatal error]{Utils.Colors._ENDC} Error ID: {error_id}")
@@ -459,7 +462,12 @@ def main() -> None:
     except OSError as e:
         print(f"Can't read file: {e}")
     tokens = Lexer.divide_glyphs(script_text)
-    Parser().parse(tokens)
+    try:
+        Parser().parse(tokens)
+    except KeyboardInterrupt:
+        ErrorHandler.throw_error(-1)
+    except Exception as e:
+        raise e
 
 if __name__ == "__main__":
     main()
