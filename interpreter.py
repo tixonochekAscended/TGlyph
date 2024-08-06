@@ -10,7 +10,7 @@ from string import ascii_uppercase
 from copy import deepcopy as copy_deepcopy
 
 class Utils:
-    class Colors(Enum):
+    class Colors:
         _HEADER = '\033[95m'
         _BLUE = '\033[94m'
         _CYAN = '\033[96m'
