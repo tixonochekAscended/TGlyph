@@ -1,13 +1,16 @@
-# OFFICIAL T^ (T-GLYPH) PROGRAMMING LANGUAGE INTERPRETER
-# P.S.: REMADE WITH CLASSES, AUTHOR: TIXONOCHEK, CONTRIBUTION: TEMA5002 (OR 5003)
+"""
+OFFICIAL T^ (T-GLYPH) PROGRAMMING LANGUAGE INTERPRETER
+P.S.: REMADE WITH CLASSES, AUTHOR: TIXONOCHEK, CONTRIBUTION: TEMA5002
+"""
 import sys, os, re
+from enum import Enum
 from typing import NoReturn, Optional, Any
 from itertools import product as itertools_product
 from string import ascii_uppercase
 from copy import deepcopy as copy_deepcopy
 
 class Utils:
-    class Colors:
+    class Colors(Enum):
         _HEADER = '\033[95m'
         _BLUE = '\033[94m'
         _CYAN = '\033[96m'
@@ -43,66 +46,60 @@ class Utils:
                 # If an invalid additional argument is found, throw
                 # an error that states this.
                 file_name: str = arguments.pop(0)
-                bypass: bool = False # ?: Should bypass file extension
+                arguments = map(lambda x: x.upper(), arguments)
+                bypass: bool = any(x in ["-B", "-BYPASS"] for x in arguments) # ?: Should bypass file extension
                 for arg in arguments:
-                    arg: str = arg.upper()
-                    if not (arg in cls._VALID_ARGS):
+                    if arg not in cls._VALID_ARGS:
                         ErrorHandler.throw_error(53, arg)
-                    match arg:
-                        case "-B" | "-BYPASS":
-                            bypass = True
                 if os.path.isfile(file_name):
-                    if bypass:
-                        return file_name
-                    if file_name.endswith(".tgl"): 
+                    if bypass or file_name.endswith(".tgl"): 
                         return file_name
                     ErrorHandler.throw_error(0)
                 ErrorHandler.throw_error(1)
-
 class ErrorHandler:
     _ERRORS: dict[int, str] = {
-      0: "Unsupported file type. If you would like to bypass the file type, provide \"-B\" or \"-bypass\" in the application arguments.",
-      1: "File you provided as a script does not exist. Perhaps you made a typo?",
-      2: "You haven't provided any application arguments, therefore there is no file to run and process.\n"
-         "Usage: py interpreter.py <tgl file> (-B/-bypass)",
-      3: "Unknown glyph contained in the code.",
-      4: "Not enough values provided for the ~~~ glyph. Check github page for more information about the needed amount and the types.",
-      5: "The first value provided to the bind glyph (^) must be a string symbolising the name of a certain register.",
-      6: "You provided a wrong type of value to the register via the bind glyph (^).",
-      7: "Register you provided via the bind glyph (^) does not exist.",
-      8: "The value provided to the bookmark glyph (#) must be a string symbolising a bookmark name.",
-      10: "The value provided to the jump glyph (!) must be a string symbolising a bookmark name that the program will jump to.",
-      12: "The bookmark you tried to jump to does not exist.",
-      14: "You can't assign values to constant, read-only registers (f.e. flags).",
-      16: "After a when glyph (@) there should be another glyph, not something else.",
-      17: "The expression inside one of the commas cannot be evaluated as a number, and might be a text. Usage of any mathematical operations inside also leads to this error. Perhaps you made a typo?",
-      18: "The values provided to the direct comparison glyph (=) must be strings, symbolising name of the registers that the glyph should compare.",
-      19: "Register you tried to compare via the direct comparison glyph (=) does not exist (at least one of the provided ones).",
-      21: "The values provided to the register match glyph (&) must be strings, symbolising the names of the registers to perform the assign operation on.",
-      22: "Register you tried to operate on via the register match glyph (&) does not exist (at least one of the provided ones).",
-      23: "You tried to provide a wrong type of value to the register via the register match glyph (&).",
-      24: "The value provided to the add glyph (+) must be a number, so it can be added to the MA register.",
-      26: "The value provided to the subtract glyph (-) must be a number, so it can be subtracted from the MA register.",
-      28: "The value provided to the divide glyph (/) must be a number, so the division can be done.",
-      30: "The value provided to the multiply glyph (*) must be a number, so the multiplication can be done.",
-      32: "Math evaluation error. This error may happen if you divide by 0, or the numbers you tried to perform operations on got too large for the language to handle. There are more possible causes for this error.",
-      34: "The value provided for the register reset glyph (`) must be a string, symbolising the name of a register that needs to be reset.",
-      35: "The register you tried to reset via the register reset glyph (`) does not exist.",
-      36: "The values provided for the type comparison glyph \"(\" must be strings, symbolising the names of the registers.",
-      37: "The register you tried to compare via the type comparison glyph \"(\" does not exist (at least one of the provided ones).",
-      39: "You can't compare a constant, read-only flag via the type comparison glyph \"(\". ",
-      40: "The values provided for the value comparison glyph \")\" must be strings, symbolising the names of the registers.",
-      41: "The register you tried to compare via the value comparison glyph \")\" does not exist (at least one of the provided ones).",
-      44: "Couldn't convert the provided text in the TA register into a float and store it in the MA register via STN-convert glyph (:)",
-      46: "The value provided to the push glyph (>) must be a string, symbolising a name of the register that is being pushed to the stack.",
-      47: "The register you tried to push onto the stack does not exist.",
-      48: "You can't push a constant, read-only flag onto the stack.",
-      49: "Invalid escape sequence in a string",
-      50: "Unterminated string literal.",
-      51: "Unterminated number literal.",
-      52: "Unterminated comment.",
-      53: "This application argument you provided does not exist: ~~~",
-      54: "Unknown error. If you see this, please contact the developer."
+        0: "Unsupported file type. If you would like to bypass the file type, provide \"-B\" or \"-bypass\" in the application arguments.",
+        1: "File you provided as a script does not exist. Perhaps you made a typo?",
+        2: "You haven't provided any application arguments, therefore there is no file to run and process.\n"
+           "Usage: py interpreter.py <tgl file> (-B/-bypass)",
+        3: "Unknown glyph contained in the code.",
+        4: "Not enough values provided for the ~~~ glyph. Check github page for more information about the needed amount and the types.",
+        5: "The first value provided to the bind glyph (^) must be a string symbolising the name of a certain register.",
+        6: "You provided a wrong type of value to the register via the bind glyph (^).",
+        7: "Register you provided via the bind glyph (^) does not exist.",
+        8: "The value provided to the bookmark glyph (#) must be a string symbolising a bookmark name.",
+        10: "The value provided to the jump glyph (!) must be a string symbolising a bookmark name that the program will jump to.",
+        12: "The bookmark you tried to jump to does not exist.",
+        14: "You can't assign values to constant, read-only registers (f.e. flags).",
+        16: "After a when glyph (@) there should be another glyph, not something else.",
+        17: "The expression inside one of the commas cannot be evaluated as a number, and might be a text. Usage of any mathematical operations inside also leads to this error. Perhaps you made a typo?",
+        18: "The values provided to the direct comparison glyph (=) must be strings, symbolising name of the registers that the glyph should compare.",
+        19: "Register you tried to compare via the direct comparison glyph (=) does not exist (at least one of the provided ones).",
+        21: "The values provided to the register match glyph (&) must be strings, symbolising the names of the registers to perform the assign operation on.",
+        22: "Register you tried to operate on via the register match glyph (&) does not exist (at least one of the provided ones).",
+        23: "You tried to provide a wrong type of value to the register via the register match glyph (&).",
+        24: "The value provided to the add glyph (+) must be a number, so it can be added to the MA register.",
+        26: "The value provided to the subtract glyph (-) must be a number, so it can be subtracted from the MA register.",
+        28: "The value provided to the divide glyph (/) must be a number, so the division can be done.",
+        30: "The value provided to the multiply glyph (*) must be a number, so the multiplication can be done.",
+        32: "Math evaluation error. This error may happen if you divide by 0, or the numbers you tried to perform operations on got too large for the language to handle. There are more possible causes for this error.",
+        34: "The value provided for the register reset glyph (`) must be a string, symbolising the name of a register that needs to be reset.",
+        35: "The register you tried to reset via the register reset glyph (`) does not exist.",
+        36: "The values provided for the type comparison glyph \"(\" must be strings, symbolising the names of the registers.",
+        37: "The register you tried to compare via the type comparison glyph \"(\" does not exist (at least one of the provided ones).",
+        39: "You can't compare a constant, read-only flag via the type comparison glyph \"(\". ",
+        40: "The values provided for the value comparison glyph \")\" must be strings, symbolising the names of the registers.",
+        41: "The register you tried to compare via the value comparison glyph \")\" does not exist (at least one of the provided ones).",
+        44: "Couldn't convert the provided text in the TA register into a float and store it in the MA register via STN-convert glyph (:)",
+        46: "The value provided to the push glyph (>) must be a string, symbolising a name of the register that is being pushed to the stack.",
+        47: "The register you tried to push onto the stack does not exist.",
+        48: "You can't push a constant, read-only flag onto the stack.",
+        49: "Invalid escape sequence in a string",
+        50: "Unterminated string literal.",
+        51: "Unterminated number literal.",
+        52: "Unterminated comment.",
+        53: "This application argument you provided does not exist: ~~~",
+        54: "Unknown error. If you see this, please contact the developer."
     }
     
     @classmethod
