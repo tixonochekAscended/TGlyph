@@ -104,7 +104,8 @@ class ErrorHandler:
         54: "Unknown error. If you see this, please contact the developer.",
         55: "The values provided for < (less than) comparison glyph (|) must be strings, symbolising the names of the registers.",
         56: "The register you tried to compare via the < (less than) comparison glyph (|) does not exist (at least one of the provided ones).",
-        57: "The registers you tried to compare via the < (less than) comparison glyph (|) must both be registers that are numerical (store numbers currently)."
+        57: "The registers you tried to compare via the < (less than) comparison glyph (|) must both be registers that are numerical (store numbers currently).",
+        58: "You can't pop a register from an empty stack."
     }
     
     @classmethod
@@ -452,7 +453,10 @@ class Parser:
                             ErrorHandler.throw_error(48)
                         self.stack.append((arguments[0].value, register_to_push.value))
                     case '<':
-                        popped = self.stack.pop(0)
+                        try:
+                            popped = self.stack.pop(0)
+                        except IndexError:
+                            ErrorHandler.throw_error(58)
                         self.get_register(popped[0]).set(popped[1])
             j += 1
 
