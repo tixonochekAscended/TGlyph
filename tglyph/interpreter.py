@@ -3,7 +3,7 @@ OFFICIAL T^ (T-GLYPH) PROGRAMMING LANGUAGE INTERPRETER
 P.S.: REMADE WITH CLASSES, AUTHOR: TIXONOCHEK, CONTRIBUTION: TEMA5002
 GPL-3.0 LICENSE, CHECK GITHUB FOR MORE INFORMATION !!!
 """
-import sys, os, re
+import sys, os, re, random
 from enum import Enum
 from typing import NoReturn, Optional, Any
 from itertools import product as itertools_product
@@ -322,6 +322,7 @@ class Parser:
         self._regs.append(Register("TA", RegisterType.STRING, ''))
         self._regs.append(Register("TB", RegisterType.STRING, '\n'))
         self._regs.append(Register("FA", RegisterType.CONST, 0.0))
+        self._regs.append(Register("FB", RegisterType.CONST, 1.0))
 
     def get_register(self, name: str, error_id: int = 54) -> Register:
         """
@@ -337,6 +338,7 @@ class Parser:
         j: int = 0
         ignore_mode: bool = False
         while j < len(tokens):
+            self.get_register("FB").set(random.randint(1, 100), bypass=True)
             current: Token = tokens[j]
             if current.type == TokenType.GLYPH: # Get & append the arguments if they exist, if they dont throw an error that states this.
                 if ignore_mode:
