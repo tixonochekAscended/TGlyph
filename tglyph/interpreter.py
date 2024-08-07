@@ -453,7 +453,7 @@ class Parser:
                             ErrorHandler.throw_error(48)
                         self.stack.append((arguments[0].value, register_to_push.value))
                     case '<':
-                        popped = self.stack.pop(0)
+                        popped = self.stack.pop()
                         self.get_register(popped[0]).set(popped[1])
             j += 1
 
