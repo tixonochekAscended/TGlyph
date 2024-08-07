@@ -105,7 +105,8 @@ class ErrorHandler:
         55: "The values provided for < (less than) comparison glyph (|) must be strings, symbolising the names of the registers.",
         56: "The register you tried to compare via the < (less than) comparison glyph (|) does not exist (at least one of the provided ones).",
         57: "The registers you tried to compare via the < (less than) comparison glyph (|) must both be registers that are numerical (store numbers currently).",
-        58: "You can't pop a register from an empty stack."
+        58: "You can't pop a register from an empty stack.",
+        59: "You can't divide by zero ^_^"
     }
     
     @classmethod
@@ -427,9 +428,12 @@ class Parser:
                            self.get_register("MA").value * self.get_register("MB").value
                         )
                     case '/':
-                        self.get_register("MA").set(
-                           self.get_register("MA").value / self.get_register("MB").value
-                        )
+                        try:
+                            self.get_register("MA").set(
+                               self.get_register("MA").value / self.get_register("MB").value
+                            )
+                        except ZeroDivisionError:
+                            ErrorHandler.throw_error(59)
                     case '%':
                         self.get_register("MA").set(
                            self.get_register("MA").value % self.get_register("MB").value
