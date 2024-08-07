@@ -57,6 +57,7 @@ class Utils:
                         return file_name
                     ErrorHandler.throw_error(0)
                 ErrorHandler.throw_error(1)
+
 class ErrorHandler:
     _ERRORS: dict[int, str] = {
         0: "Unsupported file type. If you would like to bypass the file type, provide \"-B\" or \"-bypass\" in the application arguments.",
@@ -240,11 +241,9 @@ class Register:
     
     @property
     def type(self) -> str:
-        match self._data_type:
-            case RegisterType.ANY:
-                return self._real_type or RegisterType.ANY
-            case _:
-                return self._data_type
+        if self._data_type == RegisterType.ANY:
+            return self._real_type or RegisterType.ANY
+        return self._data_type
     
     @property
     def value(self) -> Any:
@@ -266,12 +265,12 @@ class Register:
                 ErrorHandler.throw_error(error_id)
 
         elif isinstance(new_value, str):
-            if self.type == RegisterType.ANY:
+            if self._data_type == RegisterType.ANY:
                 self._real_type = RegisterType.STRING
                 self._value = new_value
-            elif self.type == RegisterType.STRING:
+            elif self._data_type == RegisterType.STRING:
                 self._value = new_value
-            elif self.type == RegisterType.CONST:
+            elif self._data_type == RegisterType.CONST:
                 ErrorHandler.throw_error(14)
             else:
                 ErrorHandler.throw_error(error_id)
