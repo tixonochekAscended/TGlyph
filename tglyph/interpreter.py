@@ -458,7 +458,7 @@ class Parser:
                         self.stack.append((arguments[0].value, register_to_push.value))
                     case '<':
                         try:
-                            popped = self.stack.pop(0)
+                            popped = self.stack.pop()
                         except IndexError:
                             ErrorHandler.throw_error(58)
                         self.get_register(popped[0]).set(popped[1])
