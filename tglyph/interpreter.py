@@ -305,7 +305,8 @@ class Parser:
        "~": 0,
        ":": 0,
        ">": 1,
-       "<": 0
+       "<": 0,
+       "?": 0
     }
     _regs: list[Register] = []
     stack: list[(str, Any)] = []
@@ -441,10 +442,12 @@ class Parser:
                     case '~':
                         self.get_register("TA").set(str(self.get_register("MA").value).removesuffix(".0"))
                     case ':':
+                        flag_register: Register = self.get_register("FA")
                         try:
                             self.get_register("MA").set(float(self.get_register("TA").value))
+                            flag_register.set(1, bypass=True)
                         except ValueError:
-                            ErrorHandler.throw_error(44)
+                            flag_register.set(0, bypass=True)
                     case '`':
                         if arguments[0].type != TokenType.STRING:
                             ErrorHandler.throw_error(34)
@@ -462,6 +465,8 @@ class Parser:
                         except IndexError:
                             ErrorHandler.throw_error(58)
                         self.get_register(popped[0]).set(popped[1])
+                    case '?':
+                        self.get_register("TA").set(input())
             j += 1
 
 def main() -> None:
