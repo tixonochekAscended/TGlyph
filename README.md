@@ -31,9 +31,10 @@ T^ _(читай как: ти-глиф)_ это эзотерический, ин�
 | %  | Mod Glyph    | 0    |Делит значение регистра MA на значение регистра MB, и записывает остаток в МА (Mod, Modulus).|
 | `  | Register Reset Glyph    | 1    | Аргументом является имя регистра записанное как текст (например: "TA"). Сбрасывает значение указанного регистра до изначального.|
 | ~  | NTS-conversion Glyph    | 0    | Переделывает число находящееся в регистре MA на текст и устанавливает значение регистра TA на данный конвертированный текст. MA -> TA.|
-| :  | STN-conversion Glyph    | 0    | Переделывает текст находящийся в регистре TA на число и устанавливает значение регистра MA на данное конвертированное число. TA -> MA.|
+| :  | STN-conversion Glyph    | 0    | Переделывает текст находящийся в регистре TA на число и устанавливает значение регистра MA на данное конвертированное число. TA -> MA. Также изменяет регистр FA в зависимости от результата конвертации: если получилось то выставляет 1, а если не вышло то 0. |
 | >  | Push Glyph    | 1 | Аргументом является имя регистра записанное как текст (например: "TA"). Пушит (добавляет в КОНЕЦ) регистр в Стак. Значение регистра при этом не меняется.|
 | <  | Pop Glyph    | 0   |Попает первый регистр находящийся в Стаке (с НАЧАЛА, не с КОНЦА), возвращая регистру значение которое у него было на момент пуша (добавления) регистра в Стак.|
+| ?  | Input Glyph    | 0   |Запрашивает ввод от пользователя из консоли и сохраняет результат в регистре TA.|
 | `[* ... *]` | Комментарии | 0 | Всё что находится между ними игнорируются лексером, могут быть многострочными. |
 
 ### Объяснения каждого регистра:
@@ -72,9 +73,10 @@ T^ _(read as: tea-glyph)_ is an esoteric interpreted programming language that i
 | % | Mod Glyph | 0 | Divides the value of register MA by the value of register MB, and then sets the value of the register MA to what is left after the division (This is a mod, modulus operator). |
 | ` | Register Reset Glyph | 1 | Resets the value of a specified register to its initial value. Argument must be name of regiser specified as text, e.g., "TA" |
 | ~ | NTS-conversion Glyph | 0 | Converts the number in MA to a text string and stores it in TA. |
-| : | STN-conversion Glyph | 0 | Converts the text in TA to a number and stores it in MA. |
+| : | STN-conversion Glyph | 0 | Converts the text in TA to a number and stores it in MA. Based on the result, sets the register FA to either 1 if success and 0 if couldn't convert.|
 | > | Push Glyph | 1 | Pushes the value of a register onto the stack. Argument must be name of regiser specified as text, e.g., "TA" |
 | < | Pop Glyph | 0 | Pops the top value from the stack and assigns it to a register it was pushed by. |
+| ? | InputGlyph | 0 | Asks for the input from the user in the console and stores the input in the register TA. |
 | `[* ... *]` | Comments | 0 | Everything that is between them is ignored by the lexer, can be multi-line |
 
 ### Register Explanations
