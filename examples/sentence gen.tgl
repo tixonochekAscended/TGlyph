@@ -1,0 +1,151 @@
+[* here we assign 25 words to register AA
+ * and push them to stack
+ *]
+
+^ "AA" "tree" > "AA"
+^ "AA" "computer" > "AA"
+^ "AA" "mouse" > "AA"
+^ "AA" "cat" > "AA"
+^ "AA" "linux" > "AA"
+^ "AA" "tglyph" > "AA"
+^ "AA" "city" > "AA"
+^ "AA" "commadore 64" > "AA"
+^ "AA" "lake" > "AA"
+^ "AA" "apple" > "AA"
+^ "AA" "tea" > "AA"
+^ "AA" "guitar" > "AA"
+^ "AA" "thread" > "AA"
+^ "AA" "polyhedra" > "AA"
+^ "AA" "math" > "AA"
+^ "AA" "crayfish" > "AA"
+^ "AA" "star" > "AA"
+^ "AA" "scorpion" > "AA"
+^ "AA" "chair" > "AA"
+^ "AA" "table" > "AA"
+^ "AA" "keyboard" > "AA"
+^ "AA" "wood burner" > "AA"
+^ "AA" "house" > "AA"
+^ "AA" "planet" > "AA"
+^ "AA" "gravity" > "AA"
+
+[* make AT random value in range [0, 25)
+ * where 25 is amount of words pushed
+ * to stack
+ *]
+& "MA" "FB"
+^ "MB" ,1,
+-
+^ "MB" ,25,
+%
+& "AT" "MA"
+
+[* pop from 0 to AT values from stack *]
+^ "MA" ,0,
+^ "MB" ,1,
+) "MA" "AT" [* additional check if AT == 0 *]
+# "loop 1" @ ;
+    <
+    +
+    ) "MA" "AT"
+! "loop 1" ;
+
+& "TA" "AA"
+^ "TB" " "
+$
+
+[* second part of the code that does 
+ * exactly the same but with diffirent
+ * words
+ *]
+
+^ "AA" "watches" > "AA"
+^ "AA" "jumps on" > "AA"
+^ "AA" "jumps over" > "AA"
+^ "AA" "eats" > "AA"
+^ "AA" "goes over the" > "AA"
+^ "AA" "wears" > "AA"
+^ "AA" "aren\'t" > "AA"
+^ "AA" "doesn\'t own a" > "AA"
+^ "AA" "has a" > "AA"
+^ "AA" "runs" > "AA"
+^ "AA" "make a" > "AA"
+^ "AA" "is a" > "AA"
+^ "AA" "waiting for" > "AA"
+^ "AA" "nukes" > "AA"
+^ "AA" "sues" > "AA"
+^ "AA" "delays" > "AA"
+^ "AA" "explodes" > "AA"
+^ "AA" "says" > "AA"
+^ "AA" "crashes" > "AA"
+^ "AA" "throws" > "AA"
+^ "AA" "catches" > "AA"
+
+& "MA" "FB"
+^ "MB" ,1,
+-
+^ "MB" ,20,
+%
+& "AT" "MA"
+
+^ "MA" ,0,
+^ "MB" ,1,
+) "MA" "AT"
+# "loop 2" @ ;
+    <
+    +
+    ) "MA" "AT"
+! "loop 2" ;
+
+& "TA" "AA"
+$
+
+[* third part of the code that prints
+ * exactly the same as first except
+ * with the newline symbol
+ *]
+
+^ "AA" "tree" > "AA"
+^ "AA" "computer" > "AA"
+^ "AA" "mouse" > "AA"
+^ "AA" "cat" > "AA"
+^ "AA" "linux" > "AA"
+^ "AA" "tglyph" > "AA"
+^ "AA" "city" > "AA"
+^ "AA" "commadore 64" > "AA"
+^ "AA" "lake" > "AA"
+^ "AA" "apple" > "AA"
+^ "AA" "tea" > "AA"
+^ "AA" "guitar" > "AA"
+^ "AA" "thread" > "AA"
+^ "AA" "polyhedra" > "AA"
+^ "AA" "math" > "AA"
+^ "AA" "crayfish" > "AA"
+^ "AA" "star" > "AA"
+^ "AA" "scorpion" > "AA"
+^ "AA" "chair" > "AA"
+^ "AA" "table" > "AA"
+^ "AA" "keyboard" > "AA"
+^ "AA" "wood burner" > "AA"
+^ "AA" "house" > "AA"
+^ "AA" "planet" > "AA"
+^ "AA" "gravity" > "AA"
+
+& "MA" "FB"
+^ "MB" ,1,
+-
+^ "MB" ,25,
+%
+& "AT" "MA"
+
+^ "MA" ,0,
+^ "MB" ,1,
+) "MA" "AT"
+# "loop 3" @ ;
+    <
+    +
+    ) "MA" "AT"
+! "loop 3" ;
+
+& "TA" "AA"
+^ "TB" "\n"
+$
