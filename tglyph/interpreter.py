@@ -10,18 +10,19 @@ from itertools import product as itertools_product
 from string import ascii_uppercase
 from copy import deepcopy as copy_deepcopy
 
+
 class Utils:
     class Colors:
-        _HEADER = '\033[95m'
-        _BLUE = '\033[94m'
-        _CYAN = '\033[96m'
-        _GREEN = '\033[92m'
-        _WARNING = '\033[93m'
-        _FAIL = '\033[91m'
-        _ENDC = '\033[0m'
-        _BOLD = '\033[1m'
-        _UNDERLINE = '\033[4m'
-    
+        HEADER = '\033[95m'
+        BLUE = '\033[94m'
+        CYAN = '\033[96m'
+        GREEN = '\033[92m'
+        WARNING = '\033[93m'
+        FAIL = '\033[91m'
+        ENDC = '\033[0m'
+        BOLD = '\033[1m'
+        UNDERLINE = '\033[4m'
+
     _VALID_ARGS = ('-B', '-BYPASS')
 
     @classmethod
@@ -36,27 +37,28 @@ class Utils:
                 # Check the ending of the file name provided.
                 file_name: str = arguments.pop(0)
                 if os.path.isfile(file_name):
-                    if file_name.endswith(".tgl"): 
+                    if file_name.endswith(".tgl"):
                         return file_name
                     ErrorHandler.throw_error(0)
                 ErrorHandler.throw_error(1)
             case _:
                 # Check the ending of the file name provided, then
-                # check all of the remaining arguments, and handle
+                # check all the remaining arguments, and handle
                 # special ones like -B (a.k.a. -bypass).
                 # If an invalid additional argument is found, throw
                 # an error that states this.
                 file_name: str = arguments.pop(0)
                 arguments = map(lambda x: x.upper(), arguments)
-                bypass: bool = any(x in ["-B", "-BYPASS"] for x in arguments) # ?: Should bypass file extension
+                bypass: bool = any(x in ["-B", "-BYPASS"] for x in arguments)  # ?: Should bypass file extension
                 for arg in arguments:
                     if arg not in cls._VALID_ARGS:
                         ErrorHandler.throw_error(53, arg)
                 if os.path.isfile(file_name):
-                    if bypass or file_name.endswith(".tgl"): 
+                    if bypass or file_name.endswith(".tgl"):
                         return file_name
                     ErrorHandler.throw_error(0)
                 ErrorHandler.throw_error(1)
+
 
 class ErrorHandler:
     _ERRORS: dict[int, str] = {
@@ -108,37 +110,42 @@ class ErrorHandler:
         58: "You can't pop a register from an empty stack.",
         59: "You can't divide by zero ^_^"
     }
-    
+
     @classmethod
     def throw_error(cls, error_id: int, *args: str) -> NoReturn:
         if error_id == -1:
-            print(f"{Utils.Colors._BOLD}{Utils.Colors._GREEN}Keyboard Interrupt, exiting the program...{Utils.Colors._ENDC}")
+            print(
+                f"{Utils.Colors.BOLD}{Utils.Colors.GREEN}Keyboard Interrupt, exiting the program...{Utils.Colors.ENDC}")
             sys.exit(-1)
         if ("~~~" in cls._ERRORS[error_id]) and (len(args) >= 1):
             cls._ERRORS[error_id] = cls._ERRORS[error_id].replace("~~~", args[0])
-        print(f"\n{Utils.Colors._FAIL}[fatal error]{Utils.Colors._ENDC} Error ID: {error_id}")
-        print(f"{Utils.Colors._CYAN}[i]{Utils.Colors._ENDC} {cls._ERRORS[error_id]}")
+        print(f"\n{Utils.Colors.FAIL}[fatal error]{Utils.Colors.ENDC} Error ID: {error_id}")
+        print(f"{Utils.Colors.CYAN}[i]{Utils.Colors.ENDC} {cls._ERRORS[error_id]}")
         sys.exit(-1)
+
 
 class TokenType(Enum):
     STRING = 0
     NUMBER = 1
     GLYPH = 2
 
-class Token: 
-    def __init__(self, type: TokenType, value: Any) -> None:
-        self.type: TokenType = type
+
+class Token:
+    def __init__(self, _type: TokenType, value: Any) -> None:
+        self.type: TokenType = _type
         self.value: Any = value
 
     def __repr__(self) -> str:
         return f"Token({self.type}) = {self.value}"
+
 
 class Lexer:
     _BACKSLASH = {
         "\"": "\"", "'": "'", "\\": "\\", "/": "/",
         "b": "\b", "f": "\f", "n": "\n", "r": "\r", "t": "\t"
     }
-    
+
+    @staticmethod
     def _decode_uXXXX(s: str, pos: int) -> int:
         esc = s[pos + 1:pos + 5]
         if len(esc) == 4 and esc[1].lower() != "x":
@@ -147,7 +154,7 @@ class Lexer:
             except ValueError:
                 pass
         ErrorHandler.throw_error(49)
-    
+
     @classmethod
     def _handle_string(cls, s: str, index: int) -> tuple[str, int]:
         new_text = ""
@@ -184,6 +191,7 @@ class Lexer:
                 new_text += chr(uni)
         return new_text, index
 
+    @staticmethod
     def _handle_number(s: str, index: int) -> tuple[float, int]:
         NUMBER_RE = re.compile(
             r'(-?(?:0|[1-9]\d*))(\.\d+)?([eE][-+]?\d+)?',
@@ -193,7 +201,7 @@ class Lexer:
         if m is None:
             ErrorHandler.throw_error(17)
         index = m.end()
-        if s[index:index+1] != ",":
+        if s[index:index + 1] != ",":
             ErrorHandler.throw_error(51)
         integer, frac, exp = m.groups()
         return float(integer + (frac or '') + (exp or '')), index + 1
@@ -201,7 +209,7 @@ class Lexer:
     @classmethod
     def divide_glyphs(cls, script_text: str) -> list[Token]:
         COMMENT_RE = re.compile(f"(.*?)(\\*])", re.VERBOSE | re.MULTILINE | re.DOTALL)
-        tokens: list[tuple[str, Any]] = []
+        tokens: list[tuple[TokenType, Any]] = []
         j = 0
         while j < len(script_text):
             glyph = script_text[j]
@@ -211,20 +219,21 @@ class Lexer:
             elif glyph == ",":
                 token, j = cls._handle_number(script_text, j + 1)
                 tokens.append((TokenType.NUMBER, token))
-            elif glyph == "[" and script_text[j:j+2] == "[*": # slices instead of index to prevent IndexError
+            elif glyph == "[" and script_text[j:j + 2] == "[*":  # slices instead of index to prevent IndexError
                 m = COMMENT_RE.match(script_text, j)
                 if m is None:
                     ErrorHandler.throw_error(52)
                 j = m.end()
-            elif glyph == "*" and script_text[j:j+2] == "*]":
+            elif glyph == "*" and script_text[j:j + 2] == "*]":
                 ErrorHandler.throw_error(52)
             elif glyph not in "\n\r\t ":
                 tokens.append((TokenType.GLYPH, glyph))
                 j += 1
             else:
                 j += 1
-        return_tokens: list[Token] = [Token(type, value) for type, value in tokens]
+        return_tokens: list[Token] = [Token(_type, value) for _type, value in tokens]
         return return_tokens
+
 
 class RegisterType(Enum):
     STRING = 1
@@ -232,25 +241,30 @@ class RegisterType(Enum):
     ANY = 3
     CONST = 4
 
+
 class Register:
     def __init__(self, name: str, data_type: RegisterType, default_value: Any):
         self._name: str = name
-        self._data_type: str = data_type
+        self._data_type: RegisterType = data_type
         if data_type == RegisterType.ANY:
             self._real_type = RegisterType.NUMBER
         self._value: Any = default_value
         self._default_value: Any = default_value
-    
+
     @property
-    def type(self) -> str:
+    def name(self):
+        return _name
+
+    @property
+    def type(self) -> RegisterType:
         if self._data_type == RegisterType.ANY:
             return self._real_type or RegisterType.ANY
         return self._data_type
-    
+
     @property
     def value(self) -> Any:
         return self._value
-    
+
     def set(self, new_value: Any, error_id: int = 54, bypass: bool = False) -> None:
         if isinstance(new_value, (int, float)):
             new_value = float(new_value)
@@ -260,7 +274,7 @@ class Register:
             elif self.type == RegisterType.CONST:
                 if not bypass:
                     ErrorHandler.throw_error(14)
-                self._value = new_value               
+                self._value = new_value
             elif self.type == RegisterType.NUMBER:
                 self._value = new_value
             else:
@@ -283,30 +297,31 @@ class Register:
     def __eq__(self, v):
         return self.type == v.type and self.value == v.value
 
+
 class Parser:
     _NEEDED_ARGS = {
-       "^": 2,
-       "&": 2,
-       "$": 0,
-       "#": 1,
-       "!": 1,
-       ";": 0,
-       "=": 2,
-       "(": 2,
-       ")": 2,
-       "|": 2,
-       "@": 1,
-       "+": 0,
-       "-": 0,
-       "/": 0,
-       "*": 0,
-       "%": 0,
-       "`": 1,
-       "~": 0,
-       ":": 0,
-       ">": 1,
-       "<": 0,
-       "?": 0
+        "^": 2,
+        "&": 2,
+        "$": 0,
+        "#": 1,
+        "!": 1,
+        ";": 0,
+        "=": 2,
+        "(": 2,
+        ")": 2,
+        "|": 2,
+        "@": 1,
+        "+": 0,
+        "-": 0,
+        "/": 0,
+        "*": 0,
+        "%": 0,
+        "`": 1,
+        "~": 0,
+        ":": 0,
+        ">": 1,
+        "<": 0,
+        "?": 0
     }
     _regs: list[Register] = []
     stack: list[(str, Any)] = []
@@ -314,7 +329,7 @@ class Parser:
 
     def __init__(self):
         """
-        Create & append all of the TGlyph registers,
+        Create & append all the TGlyph registers,
         to the _regs list of Parser class
         """
         # This code creates 26 universal registers
@@ -332,7 +347,7 @@ class Parser:
         """
         name = name.upper()
         for register in self._regs:
-            if name == register._name:
+            if name == register.name:
                 return register
         ErrorHandler.throw_error(error_id)
 
@@ -342,14 +357,15 @@ class Parser:
         while j < len(tokens):
             self.get_register("FB").set(random.randint(1, 100), bypass=True)
             current: Token = tokens[j]
-            if current.type == TokenType.GLYPH: # Get & append the arguments if they exist, if they dont throw an error that states this.
+            if current.type == TokenType.GLYPH:  # Get & append the arguments if they exist, if they don't throw an error that states this.
                 if ignore_mode:
                     ignore_mode = current.value != ";"
                     j += 1
-                    continue     
+                    continue
                 if current.value not in self._NEEDED_ARGS:
                     ErrorHandler.throw_error(3)
-                arguments: list[Token] = tokens[j+1:j+1+self._NEEDED_ARGS[current.value]] # Get arguments using slices to prevent IndexError
+                arguments: list[Token] = tokens[j + 1:j + 1 + self._NEEDED_ARGS[
+                    current.value]]  # Get arguments using slices to prevent IndexError
                 if len(arguments) < self._NEEDED_ARGS[current.value]:
                     ErrorHandler.throw_error(4, current.value)
                 # Execute each glyph (the actual interpretation of the code)
@@ -406,7 +422,8 @@ class Parser:
                             ErrorHandler.throw_error(55)
                         first_to_compare: Register = self.get_register(arguments[0].value, 56)
                         second_to_compare: Register = self.get_register(arguments[1].value, 56)
-                        if not (first_to_compare.type == RegisterType.NUMBER) or not (second_to_compare.type == RegisterType.NUMBER):
+                        if not (first_to_compare.type == RegisterType.NUMBER) or not (
+                                second_to_compare.type == RegisterType.NUMBER):
                             ErrorHandler.throw_error(57)
                         flag_register: Register = self.get_register("FA")
                         flag_register.set(int(first_to_compare.value < second_to_compare.value), bypass=True)
@@ -414,30 +431,30 @@ class Parser:
                         if arguments[0].type != TokenType.GLYPH:
                             ErrorHandler.throw_error(16)
                         if not self.get_register("FA").value:
-                           j += 2
-                           continue
+                            j += 2
+                            continue
                     case '+':
                         self.get_register("MA").set(
-                           self.get_register("MA").value + self.get_register("MB").value
+                            self.get_register("MA").value + self.get_register("MB").value
                         )
                     case '-':
                         self.get_register("MA").set(
-                           self.get_register("MA").value - self.get_register("MB").value
+                            self.get_register("MA").value - self.get_register("MB").value
                         )
                     case '*':
                         self.get_register("MA").set(
-                           self.get_register("MA").value * self.get_register("MB").value
+                            self.get_register("MA").value * self.get_register("MB").value
                         )
                     case '/':
                         try:
                             self.get_register("MA").set(
-                               self.get_register("MA").value / self.get_register("MB").value
+                                self.get_register("MA").value / self.get_register("MB").value
                             )
                         except ZeroDivisionError:
                             ErrorHandler.throw_error(59)
                     case '%':
                         self.get_register("MA").set(
-                           self.get_register("MA").value % self.get_register("MB").value
+                            self.get_register("MA").value % self.get_register("MB").value
                         )
                     case '~':
                         self.get_register("TA").set(str(self.get_register("MA").value).removesuffix(".0"))
@@ -469,6 +486,7 @@ class Parser:
                         self.get_register("TA").set(input())
             j += 1
 
+
 def main() -> None:
     script_name = Utils.check_app_args(sys.argv)
     try:
@@ -483,6 +501,7 @@ def main() -> None:
         ErrorHandler.throw_error(-1)
     except Exception as e:
         raise e
+
 
 if __name__ == "__main__":
     main()
