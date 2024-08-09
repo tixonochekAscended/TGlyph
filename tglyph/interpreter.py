@@ -253,7 +253,7 @@ class Register:
 
     @property
     def name(self):
-        return _name
+        return self._name
 
     @property
     def type(self) -> RegisterType:
