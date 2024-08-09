@@ -1,8 +1,0 @@
-^ "TA" "HELLO WORLD THIS IS A TEST STRING \n\n\t\\\\\\\"tea glyph 🫖\""
-$ 
-^ "TA" '\"\u2660\u2663\u2665\u2666\"'
-$
-^ "TA" "\u041f\u0440\u0438\u0432\u0435\u0442, \u043c\u0438\u0440!'
-$
-^ "TA" '🐙🐙🐙🐙🐙🐙"
-$
