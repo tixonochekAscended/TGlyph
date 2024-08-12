@@ -3,7 +3,7 @@ OFFICIAL T^ (T-GLYPH) PROGRAMMING LANGUAGE INTERPRETER
 P.S.: REMADE WITH CLASSES, AUTHOR: TIXONOCHEK, CONTRIBUTION: TEMA5002
 GPL-3.0 LICENSE, CHECK GITHUB FOR MORE INFORMATION !!!
 """
-import sys, os, re, random
+import sys, os, re, random, math
 from enum import Enum
 from typing import NoReturn, Optional, Any
 from itertools import product as itertools_product
@@ -108,7 +108,9 @@ class ErrorHandler:
         56: "The register you tried to compare via the < (less than) comparison glyph (|) does not exist (at least one of the provided ones).",
         57: "The registers you tried to compare via the < (less than) comparison glyph (|) must both be registers that are numerical (store numbers currently).",
         58: "You can't pop a register from an empty stack.",
-        59: "You can't divide by zero ^_^"
+        59: "You can't divide by zero ^_^",
+        60: "An error occured while trying to perform a log operation. Are you sure that the base of the logarithm isn't zero? =_=",
+        61: "You can't take a 0th root of any number. Sorry ~_~"
     }
 
     @classmethod
@@ -316,6 +318,11 @@ class Parser:
         "/": 0,
         "*": 0,
         "%": 0,
+        "r": 0,
+        "l": 0,
+        "s": 0,
+        "c": 0,
+        "t": 0,
         "`": 1,
         "~": 0,
         ":": 0,
@@ -455,6 +462,32 @@ class Parser:
                     case '%':
                         self.get_register("MA").set(
                             self.get_register("MA").value % self.get_register("MB").value
+                        )
+                    case 'r':
+                        try:
+                            self.get_register("MA").set(
+                                self.get_register("MA").value ** (1/self.get_register("MB").value)
+                            )
+                        except:
+                            ErrorHandler.throw_error(61)
+                    case 'l':
+                        try:
+                            self.get_register("MA").set(
+                                math.log(self.get_register("MA").value, self.get_register   ("MB").value)
+                            )
+                        except:
+                            ErrorHandler.throw_error(60)
+                    case 's':
+                        self.get_register("MA").set(
+                            math.sin(self.get_register("MA").value)
+                        )
+                    case 'c':
+                        self.get_register("MA").set(
+                            math.cos(self.get_register("MA").value)
+                        )
+                    case 't':
+                        self.get_register("MA").set(
+                            math.tan(self.get_register("MA").value)
                         )
                     case '~':
                         self.get_register("TA").set(str(self.get_register("MA").value).removesuffix(".0"))
