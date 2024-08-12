@@ -29,6 +29,11 @@ T^ _(читай как: ти-глиф)_ это эзотерический, ин�
 | /  | Divide Glyph    | 0    |Делит значение регистра MA на значение регистра MB.|
 | *  | Multiply Glyph    | 0    |Умножает значение регистра MA на значение регистра MB.|
 | %  | Mod Glyph    | 0    |Делит значение регистра MA на значение регистра MB, и записывает остаток в МА (Mod, Modulus).|
+| r  | Root Glyph    | 0    |Берет (ЗНАЧЕНИЕ РЕГИСТРА MB)ый корень из числа (ЗНАЧЕНИЕ РЕГИСТРА MA), результат записывается в МА.|
+| l  | Log Glyph    | 0    |Записывает результат логарифма в МА, где база это число которое находится в регистре MB а аргументом логарифма число находящееся в регистре МА.|
+| s  | Sin Glyph    | 0    |Результат записывается в МА. Берет синус числа которое находится в MA.|
+| c  | Cos Glyph    | 0    |Результат записывается в МА. Берет косинус числа которое находится в MA.|
+| t  | Tan Glyph    | 0    |Результат записывается в МА. Берет тангенс числа которое находится в MA.|
 | `  | Register Reset Glyph    | 1    | Аргументом является имя регистра записанное как текст (например: "TA"). Сбрасывает значение указанного регистра до изначального.|
 | ~  | NTS-conversion Glyph    | 0    | Переделывает число находящееся в регистре MA на текст и устанавливает значение регистра TA на данный конвертированный текст. MA -> TA.|
 | :  | STN-conversion Glyph    | 0    | Переделывает текст находящийся в регистре TA на число и устанавливает значение регистра MA на данное конвертированное число. TA -> MA. Также изменяет регистр FA в зависимости от результата конвертации: если получилось то выставляет 1, а если не вышло то 0. |
@@ -71,6 +76,11 @@ T^ _(read as: tea-glyph)_ is an esoteric interpreted programming language that i
 | / | Divide Glyph | 0 | Divides the value of register MA by the value of register MB. |
 | * | Multiply Glyph | 0 | Multiplies the value of register MA by the value of register MB. |
 | % | Mod Glyph | 0 | Divides the value of register MA by the value of register MB, and then sets the value of the register MA to what is left after the division (This is a mod, modulus operator). |
+| r  | Root Glyph    | 0    |Takes (VALUE OF MB REGISTER)th root of (VALUE OF REGISTER MA), result of the operation is written in the register МА.|
+| l  | Log Glyph    | 0    |The result of the log operation is stored in MA, where the log base is the value of the registerr MB, and the log's argument is the value of the register MA.|
+| s  | Sin Glyph    | 0    |The result of the operation is stored in МА. Takes sin of a number that is located in the register MA.|
+| c  | Cos Glyph    | 0    |The result of the operation is stored in МА. Takes cosine of a number that is located in the register MA.|
+| t  | Tan Glyph    | 0    |The result of the operation is stored in МА. Takes tangent of a number that is located in the register MA.|
 | ` | Register Reset Glyph | 1 | Resets the value of a specified register to its initial value. Argument must be name of regiser specified as text, e.g., "TA" |
 | ~ | NTS-conversion Glyph | 0 | Converts the number in MA to a text string and stores it in TA. |
 | : | STN-conversion Glyph | 0 | Converts the text in TA to a number and stores it in MA. Based on the result, sets the register FA to either 1 if success and 0 if couldn't convert.|
