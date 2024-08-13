@@ -48,7 +48,10 @@ class Utils:
                 # If an invalid additional argument is found, throw
                 # an error that states this.
                 file_name: str = arguments.pop(0)
-                arguments = map(lambda x: x.upper(), arguments)
+                nArg = []
+                for arg in arguments:
+                    nArg.append(arg.upper())
+                arguments = nArg
                 bypass: bool = any(x in ["-B", "-BYPASS"] for x in arguments)  # ?: Should bypass file extension
                 for arg in arguments:
                     if arg not in cls._VALID_ARGS:
@@ -110,7 +113,22 @@ class ErrorHandler:
         58: "You can't pop a register from an empty stack.",
         59: "You can't divide by zero ^_^",
         60: "An error occured while trying to perform a log operation. Are you sure that the base of the logarithm isn't zero? =_=",
-        61: "You can't take a 0th root of any number. Sorry ~_~"
+        61: "An error occured while trying to perform a root operation. This might be caused by wrong arguments provided to the root glyph (r). Just in case, you can't take a 0th root of any number. Sorry ~_~",
+        62: "The value provided to the get file glyph (g) must be a string, symbolising a name of the file that needs to be read.",
+        63: "The file you tried to read via the get file glyph (g) doesn't exist.",
+        64: "An error occured while trying to read the file you provided via the get file glyph (g). This error may be caused for many reasons, like the interpreter not having permissions to read the file.",
+        65: "The value provided to the write file glyph (w) must be a string, symbolising a name of the file that needs to be worked on.",
+        66: "An error occured while trying to write to the file you provided via the write file glyph (w). This error may be caused for many reasons, like the interpreter not having permissions to read/write the file.",
+        67: "The value provided to the exclusive get file glyph (G) must be a string, symbolising a name of the register that needs to read, in order to get the file name.",
+        68: "The register you tried to provide to the exclusive get file glyph (G) doesn't exist.",
+        69: "The register you tried to provide to the exclusive get file glyph (G) must be a register that currently contains a string -_-",
+        70: "The file you tried to provide to the exclusive get file glyph (G) through one of the registers doesn't exist.",
+        71: "An error occured while trying to read the file you provided via the exclusive get file glyph (G). This error may be caused for many reasons, like the interpreter not having permissions to read the file.",
+        72: "The value provided to the exclusive write file glyph (W) must be a string, symbolising a name of the register that needs to read, in order to get the file name.",
+        73: "The register you tried to provide to the exclusive write file glyph (W) doesn't exist.",
+        74: "The register you tried to provide to the exclusive write file glyph (W) must be a register that currently contains a string -_-",
+        75: "The file you tried to provide to the exclusive write file glyph (W) through one of the registers doesn't exist.",
+        76: "An error occured while trying to write to the file you provided via the exclusive write file glyph (W). This error may be caused for many reasons, like the interpreter not having permissions to read/write the file.",
     }
 
     @classmethod
@@ -328,7 +346,11 @@ class Parser:
         ":": 0,
         ">": 1,
         "<": 0,
-        "?": 0
+        "?": 0,
+        "g": 1,
+        "w": 1,
+        "G": 1,
+        "W": 1
     }
     _regs: list[Register] = []
     stack: list[(str, Any)] = []
@@ -516,7 +538,51 @@ class Parser:
                             ErrorHandler.throw_error(58)
                         self.get_register(popped[0]).set(popped[1])
                     case '?':
-                        self.get_register("TA").set(input())
+                        self.get_register("TA").set(input()),
+                    case 'g':
+                        if arguments[0].type != TokenType.STRING:
+                            ErrorHandler.throw_error(62)
+                        if not os.path.isfile(arguments[0].value):
+                            ErrorHandler.throw_error(63)
+                        try:
+                            with open(arguments[0].value, 'r', encoding="UTF-8") as file:
+                                script_text: str = file.read()
+                                self.get_register('TA').set(script_text)
+                        except:
+                            ErrorHandler.throw_error(64)
+                    case 'w':
+                        if arguments[0].type != TokenType.STRING:
+                            ErrorHandler.throw_error(65)
+                        try:
+                            with open(arguments[0].value, 'w', encoding="UTF-8") as file:
+                                file.write(self.get_register('TA').value)
+                        except:
+                            ErrorHandler.throw_error(66)
+                    case 'G':
+                        if arguments[0].type != TokenType.STRING:
+                            ErrorHandler.throw_error(67)
+                        file_name_reg = self.get_register(arguments[0].value, error_id=68)
+                        if not file_name_reg.type == RegisterType.STRING:
+                            ErrorHandler.throw_error(69)
+                        if not os.path.isfile(file_name_reg.value):
+                            ErrorHandler.throw_error(70)
+                        try:
+                            with open(file_name_reg.value, 'r', encoding="UTF-8") as file:
+                                script_text: str = file.read()
+                                self.get_register('TA').set(script_text)
+                        except:
+                            ErrorHandler.throw_error(71)
+                    case 'W':
+                        if arguments[0].type != TokenType.STRING:
+                            ErrorHandler.throw_error(72)
+                        file_name_reg = self.get_register(arguments[0].value, error_id=73)
+                        if not file_name_reg.type == RegisterType.STRING:
+                            ErrorHandler.throw_error(74)
+                        try:
+                            with open(file_name_reg.value, 'w', encoding="UTF-8") as file:
+                                file.write(self.get_register('TA').value)
+                        except:
+                            ErrorHandler.throw_error(76)
             j += 1
 
 
