@@ -1,5 +1,5 @@
 <p align="center">
-<a href="https://imgbb.com/"><img src="https://i.ibb.co/dkBB1nM/TG-Logo.png" alt="TG-Logo" border="0" width=250 height=250/></a><br>
+<img src="https://i.ibb.co/dkBB1nM/TG-Logo.png" alt="TG-Logo" border="0" width=250 height=250/><br>
 <i>↓ ↓ You can find explanations in English below ↓ ↓</i><br>
 Esolang wiki link: https://esolangs.org/wiki/T%5E
 </p>
